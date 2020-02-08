@@ -1,7 +1,7 @@
 import 'package:carros/entity/car.dart';
+import 'package:carros/pages/car_form_page.dart';
+import 'package:carros/pages/delete_car.dart';
 import 'package:carros/pages/detail_car.dart';
-import 'package:carros/pages/home.dart';
-import 'package:carros/utils/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hidden_drawer_menu/hidden_drawer/hidden_drawer_menu.dart';
@@ -12,24 +12,31 @@ class MainDetailCar extends StatefulWidget {
   MainDetailCar(this.car);
 
   @override
-  _MainDetailCarState createState() => _MainDetailCarState(car);
+  _MainDetailCarState createState() => _MainDetailCarState();
 }
 
 class _MainDetailCarState extends State<MainDetailCar> {
-  Car car;
-  _MainDetailCarState(this.car);
+
+  _MainDetailCarState();
 
   List<ScreenHiddenDrawer> itens = new List();
-
   @override
   void initState() {
+    Car car = widget.car;
+    itens.add(new ScreenHiddenDrawer(
+        new ItemHiddenMenu(
+          name: "Home",
+          baseStyle: TextStyle( color: Colors.white.withOpacity(0.8), fontSize: 28.0 ),
+          colorLineSelected: Colors.teal,
+        ),
+        DetailCar(car)));
     itens.add(new ScreenHiddenDrawer(
         new ItemHiddenMenu(
           name: "Editar",
           baseStyle: TextStyle( color: Colors.white.withOpacity(0.8), fontSize: 28.0 ),
           colorLineSelected: Colors.teal,
         ),
-        DetailCar(car)));
+        CarFormPage(car:car)));
 
     itens.add(new ScreenHiddenDrawer(
         new ItemHiddenMenu(
@@ -37,7 +44,7 @@ class _MainDetailCarState extends State<MainDetailCar> {
           baseStyle: TextStyle( color: Colors.white.withOpacity(0.8), fontSize: 28.0 ),
           colorLineSelected: Colors.red,
         ),
-        DetailCar(car)));
+        DeleteCar(car)));
 
     itens.add(new ScreenHiddenDrawer(
         new ItemHiddenMenu(
@@ -80,7 +87,7 @@ class _MainDetailCarState extends State<MainDetailCar> {
           elevationAppBar: 4.0,
           tittleAppBar: Center(child: Icon(Icons.ac_unit),),
           enableShadowItensMenu: true,
-          backgroundMenu: DecorationImage(image: NetworkImage(car.urlFoto),fit: BoxFit.cover),
+          backgroundMenu: DecorationImage(image: NetworkImage(widget.car.urlFoto),fit: BoxFit.cover),
     );
   }
 }

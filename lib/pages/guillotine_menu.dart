@@ -1,10 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carros/entity/user.dart';
-import 'package:carros/pages/login.dart';
-import 'package:carros/utils/util.dart';
-import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carros/entity/user.dart';
+import 'package:carros/pages/car_form_page.dart';
+import 'package:carros/pages/login.dart';
+import 'package:carros/pages/single_list_type_car.dart';
+import 'package:carros/utils/util.dart';
+import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
 
 class GuillotineMenu extends StatefulWidget {
@@ -40,15 +42,16 @@ class _GuillotineMenuState extends State<GuillotineMenu>
       "color": Colors.white,
     },
     {
+      "icon": Icons.add_circle,
+      "title": "Cadastrar",
+      "color": Colors.white,
+    },
+    {
       "icon": Icons.settings,
       "title": "Logout",
       "color": Colors.white,
     },
-    {
-      "icon": Icons.home,
-      "title": "Home",
-      "color": Colors.white,
-    },
+
   ];
 
   @override
@@ -228,11 +231,7 @@ class _GuillotineMenuState extends State<GuillotineMenu>
                               color: Colors.red,
                               onPressed: () {
                                 print('Button clicked ${menuItem['title']}');
-                                if (menuItem['title'].toString() == "Logout") {
-                                  User.clear();
-                                  Navigator.pop(context);
-                                  push(context, Login(), replace: true);
-                                }
+                                clickItem(menuItem['title']);
                               },
                               child: new Text(
                                 menuItem["title"],
@@ -245,7 +244,6 @@ class _GuillotineMenuState extends State<GuillotineMenu>
                           );
                         }).toList(),
                       ),
-
                     ],
                   ),
                 ),
@@ -255,6 +253,32 @@ class _GuillotineMenuState extends State<GuillotineMenu>
         ),
       ),
     );
+  }
+
+  void clickItem(menuItem) {
+    switch (menuItem) {
+      case "Logout":
+        User.clear();
+        Navigator.pop(context);
+        push(context, Login(), replace: true);
+        break;
+      case "Cadastrar":
+        _playAnimation();
+        push(context, CarFormPage());
+        break;
+      case "Luxo":
+        _playAnimation();
+        push(context, SingleListTypeCar("luxo"));
+        break;
+      case "Classicos":
+        _playAnimation();
+        push(context, SingleListTypeCar("classicos"));
+        break;
+      case "Esportivos":
+        _playAnimation();
+        push(context, SingleListTypeCar("esportivos"));
+        break;
+    }
   }
 }
 

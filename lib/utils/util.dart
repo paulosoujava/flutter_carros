@@ -16,8 +16,11 @@ Future push(BuildContext context, Widget page, {bool replace = false}) {
   }
 }
 
+bool pop<T extends Object>(BuildContext context, [T result]){
+  return Navigator.pop(context);
+}
 
-defaultAlert(BuildContext context, String title, String desc, AlertType type) {
+defaultAlert(BuildContext context, String title, String desc, AlertType type, {bool img = false}) {
   var alertStyle = AlertStyle(
     animationType: AnimationType.fromTop,
     isCloseButton: false,
@@ -35,6 +38,26 @@ defaultAlert(BuildContext context, String title, String desc, AlertType type) {
     ),
   );
 
+  if(img)
+    return Alert(
+      style: alertStyle,
+      context: context,
+      title: title,
+      desc: desc,
+      image: Image.asset("assets/error.png"),
+      buttons: [
+        DialogButton(
+          color: Colors.white,
+          child: Text(
+            "ok",
+            style: TextStyle(color: Colors.black, fontSize: 20),
+          ),
+          onPressed: ()=> Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    ).show();
+    else
   return Alert(
     style: alertStyle,
     context: context,
@@ -53,6 +76,35 @@ defaultAlert(BuildContext context, String title, String desc, AlertType type) {
       )
     ],
   ).show();
+
+
+
 }
 
 
+alert(BuildContext context, String msg, {Function callback}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          title: Text("Opa"),
+          content: Text(msg),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+                if(callback != null) {
+                  callback();
+                }
+              },
+            )
+          ],
+        ),
+      );
+    },
+  );
+}

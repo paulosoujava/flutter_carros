@@ -1,25 +1,39 @@
-import 'package:carros/entity/user.dart';
-import 'package:carros/pages/guillotine.dart';
-import 'package:carros/pages/home.dart';
-import 'package:carros/pages/login.dart';
+import 'package:carros/pages/favorito_model.dart';
 import 'package:carros/pages/splash.dart';
+import 'package:carros/utils/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() => runApp(MyApp());
+
+void main() {
+  Provider.debugCheckInvalidValueType = null;
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
 
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch:
-        Colors.blue,
-        brightness: Brightness.dark
+    return MultiProvider(
+      providers: [
+        Provider<EventBus>(
+          builder: (context)=> EventBus(),
+          dispose: (context, bus) => bus.dispose(),
+        ),
+        ChangeNotifierProvider<FavoritoModel>(
+          builder: (context)=> FavoritoModel(),
+        )
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch:
+          Colors.blue,
+          brightness: Brightness.dark
+        ),
+        home: Splash(),
       ),
-      home: Splash(),
     );
   }
 

@@ -1,8 +1,7 @@
 import 'package:carros/api/car_api.dart';
 import 'package:carros/pages/car_page.dart';
+import 'package:carros/pages/farorite_page.dart';
 import 'package:carros/utils/prefs.dart';
-import 'package:carros/widgets/drawer_list.dart';
-import 'package:carros/widgets/my_list_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +16,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin<Home> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     Prefs.getInt("tabIdx").then((idx) {
       _tabController.index = idx;
     });
@@ -38,9 +37,22 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin<Home> {
           unselectedLabelColor: Colors.white,
           controller: _tabController,
           tabs: [
-            Tab(text: "Classicos"),
-            Tab(text: "Esportivos"),
-            Tab(text: "Luxo"),
+            Tab(
+              text: "Classicos",
+              icon: Icon(Icons.directions_car),
+            ),
+            Tab(
+              text: "Esporte",
+              icon: Icon(Icons.directions_car),
+            ),
+            Tab(
+              text: "Luxo",
+              icon: Icon(Icons.directions_car),
+            ),
+            Tab(
+              text: "Favorito",
+              icon: Icon(Icons.favorite),
+            ),
           ],
         ),
       ),
@@ -50,6 +62,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin<Home> {
           CarPage(TypeCar.classicos),
           CarPage(TypeCar.esportivos),
           CarPage(TypeCar.luxo),
+          FavoritePage(),
         ],
       ),
       //drawer: DrawerList()

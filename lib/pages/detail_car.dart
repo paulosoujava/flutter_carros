@@ -1,12 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carros/api/loripsum_api.dart';
 import 'package:carros/entity/car.dart';
-import 'package:carros/pages/home.dart';
-import 'package:carros/utils/util.dart';
+import 'package:carros/service/favorite_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
-import 'package:nice_button/nice_button.dart';
 
 class DetailCar extends StatefulWidget {
   Car c;
@@ -20,9 +18,14 @@ class DetailCar extends StatefulWidget {
 class _DetailCarState extends State<DetailCar> {
   final _bloc = LoripsumBloc();
 
+  Color _color = Colors.white;
+
   @override
   void initState() {
     super.initState();
+    FavoritoService.isFavorito(widget.c).then((fav){
+      updateHeart(fav);
+    });
     _bloc.fetch();
   }
   @override
@@ -127,13 +130,13 @@ class _DetailCarState extends State<DetailCar> {
             IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: Colors.red,
+                color: _color,
               ),
-              onPressed: () {},
+              onPressed: _onClickFavorito,
             ),
             IconButton(
               icon: Icon(Icons.share),
-              onPressed: () {},
+              onPressed: (){},
             ),
           ],
         ),
@@ -164,5 +167,16 @@ class _DetailCarState extends State<DetailCar> {
   void dispose() {
     super.dispose();
     _bloc.dispose();
+  }
+
+  updateHeart(bool isFavorito){
+    setState(() {
+      _color = isFavorito ? Colors.red : Colors.white;
+    });
+  }
+
+  void _onClickFavorito() async {
+    bool isFavorito = await FavoritoService.favoritar(widget.c, context);
+     updateHeart(isFavorito);
   }
 }

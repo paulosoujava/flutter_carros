@@ -1,9 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carros/api/api_response.dart';
 import 'package:carros/api/car_api.dart';
+import 'package:carros/api/loripsum_api.dart';
 import 'package:carros/entity/car.dart';
-import 'package:carros/pages/delete_car.dart';
-import 'package:carros/pages/main_detail_car.dart';
 import 'package:carros/utils/event_bus.dart';
 import 'package:carros/utils/util.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,87 +10,154 @@ import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-class MyListView extends StatelessWidget {
-  List<Car> cars;
+class DeleteCar extends StatefulWidget {
+  Car c;
 
-  MyListView(this.cars);
+  DeleteCar(this.c);
+
+  @override
+  _DeleteCarState createState() => _DeleteCarState();
+}
+
+class _DeleteCarState extends State<DeleteCar> {
+  final _bloc = LoripsumBloc();
+  bool isShow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc.fetch();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: ListView.builder(
-        itemCount: cars != null ? cars.length : 0,
-        itemBuilder: (context, idx) {
-          Car c = cars[idx];
-          return Container(
-            padding: EdgeInsets.all(16),
-            child: InkWell(
-              onTap: () {
-                push(context, MainDetailCar(c));
-              },
-              onLongPress: () {
-                push(context, _onClickDeletar(context, c));
-              },
-              child: Card(
-                elevation: 4,
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Center(
-                        child: imageCar(c.urlFoto),
-                      ),
-                      Text(
-                        c.nome,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 25),
-                      ),
-                      Text(
-                        c.tipo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      ButtonBar(
-                        children: <Widget>[
-                          FlatButton(
-                            child: const Text('Detalhes'),
-                            onPressed: () {
-                              push(context, MainDetailCar(c));
-                            },
-                          ),
-                          FlatButton(
-                            child: const Text('Share'),
-                            onPressed: () {
-                              /* ... */
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+      padding: EdgeInsets.all(16),
+      child: ListView(
+        children: <Widget>[
+          imageCar(widget.c.urlFoto),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: Divider(
+              color: Colors.red,
+            ),
+          ),
+          _content(),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: Divider(
+              color: Colors.red,
+            ),
+          ),
+          _description(),
+        ],
+      ),
+    );
+  }
+
+  _description() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          height: 15,
+        ),
+        Text(
+          "Descrição\n",
+          maxLines: 1,
+          style: TextStyle(
+            fontSize: 18,
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        StreamBuilder<String>(
+          stream: _bloc.stream,
+          builder: (c, s) {
+            if (!s.hasData) {
+              return Center(
+                child: LoadingBouncingGrid.circle(
+                  size: 45,
+                  inverted: true,
+                  backgroundColor: Colors.greenAccent,
+                  duration: Duration(milliseconds: 900),
                 ),
+              );
+            }
+            return Text(
+              s.data,
+              style: TextStyle(
+                fontSize: 15,
+              ),
+            );
+          },
+        ),
+        SizedBox(
+          height: 40,
+        ),
+      ],
+    );
+  }
+
+  _content() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              widget.c.nome,
+              maxLines: 1,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            Text(
+              "Tipo: ${widget.c.tipo}",
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 15,
               ),
             ),
-          );
-        },
-      ),
+          ],
+        ),
+        Row(
+          children: <Widget>[
+            isShow
+                ? Center(
+                    child: LoadingBouncingLine.circle(
+                      size: 20,
+                      backgroundColor: Colors.greenAccent,
+                      duration: Duration(milliseconds: 900),
+                    ),
+                  )
+                : IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                    onPressed: _onClickDeletar,
+                  ),
+          ],
+        ),
+      ],
     );
   }
 
   imageCar(String url) {
     return CachedNetworkImage(
-      imageUrl: url ??
-          "http://www.livroandroid.com.br/livro/carros/esportivos/Maserati_Grancabrio_Sport.png",
+      imageUrl: url,
       width: 250,
+      height: 250,
       placeholder: (context, url) => SizedBox(
         height: 90,
         width: 90,
-        child: LoadingBouncingGrid.circle(
+        child: LoadingFlipping.circle(
           size: 25,
-          backgroundColor: Colors.greenAccent,
+          backgroundColor: Colors.red,
           duration: Duration(milliseconds: 900),
         ),
       ),
@@ -99,32 +165,22 @@ class MyListView extends StatelessWidget {
     );
   }
 
-  _onClickDeletar(context, Car c) {
-    showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text("O que deseja fazer", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
-                FlatButton(
-                    child: Text("Compartilhar"), onPressed: () => Navigator.pop(context)),
-                FlatButton(
-                    child: Text("Visulalizar"), onPressed: () => Navigator.pop(context)),
-                FlatButton(
-                    child: Text("Deletar"), onPressed: () => Navigator.pop(context)),
-              ],
-            ),
-          );
-        });
+  @override
+  void dispose() {
+    super.dispose();
+    _bloc.dispose();
   }
+_updateView( bool update){
+  setState(() {
+    isShow = update;
+  });
+}
+  _onClickDeletar() {
+    _updateView(true);
 
-  _ClickDeletar(context, Car c) {
     AlertStyle alertStyle;
     _alert(context, "Você tem certeza?", () async {
-      ApiResponse<bool> response = await CarAPi.delete(c);
+      ApiResponse<bool> response = await CarAPi.delete(widget.c);
 
       if (response.ok) {
         alertStyle = styleAlert(Colors.green, Colors.white, Colors.white);
@@ -142,15 +198,16 @@ class MyListView extends StatelessWidget {
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               onPressed: () {
-                EventBus.get(context)
-                    .sendEvent(CarroEvent("carro_deleted", c.tipo));
+                EventBus.get(context).sendEvent(CarroEvent("carro_deleted", widget.c.tipo));
                 Navigator.pop(context);
+                _back();
               },
               width: 120,
             )
           ],
         ).show();
       } else {
+
         alertStyle = styleAlert(Colors.red, Colors.white, Colors.white);
         Alert(
           style: alertStyle,
@@ -197,6 +254,10 @@ class MyListView extends StatelessWidget {
     return alertStyle;
   }
 
+  void _back() {
+    pop(context);
+  }
+
   _alert(BuildContext context, String msg, Function callback) {
     showDialog(
       context: context,
@@ -211,6 +272,7 @@ class MyListView extends StatelessWidget {
               FlatButton(
                 child: Text("Sim"),
                 onPressed: () {
+                  _updateView(false);
                   Navigator.pop(context);
                   if (callback != null) {
                     callback();
@@ -220,6 +282,7 @@ class MyListView extends StatelessWidget {
               FlatButton(
                 child: Text("Não"),
                 onPressed: () {
+                  _updateView(false);
                   Navigator.pop(context);
                 },
               )

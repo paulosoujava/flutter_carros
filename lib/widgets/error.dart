@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 class Error extends StatelessWidget {
 
   String error;
-
-  Error(this.error);
+  String title;
+  bool isEmpty;
+  Error(this.error, {this.title,  this.isEmpty = false});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class Error extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(16),
           child: Text(
-            "Oh meu Deus por que?",
+            title??"Oh meu Deus por que?",
             style: TextStyle(
               color: Colors.white,
               fontSize: 20  ,
@@ -23,7 +24,8 @@ class Error extends StatelessWidget {
           ),
         ),
         Image.asset(
-          'assets/error.png',
+          isEmpty ? 'assets/empty.png' : 'assets/error.png' ,
+          width: 120,
           alignment: Alignment.centerLeft,
         ),
         Container(

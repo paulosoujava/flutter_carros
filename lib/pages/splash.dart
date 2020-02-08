@@ -1,7 +1,9 @@
+import 'package:carros/db/db_helper.dart';
 import 'package:carros/entity/user.dart';
 import 'package:carros/pages/guillotine.dart';
 import 'package:carros/pages/home.dart';
 import 'package:carros/pages/login.dart';
+import 'package:carros/pages/welcome/welcomePage.dart';
 import 'package:carros/utils/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,8 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.getInstance().db;
+
     splash(context);
   }
 
@@ -36,7 +40,6 @@ class _SplashState extends State<Splash> {
   }
 
   void splash(BuildContext context) {
-    bool isHome = false;
     Future<User> future = User.get();
     future.then((User u) {
       if (u != null)
