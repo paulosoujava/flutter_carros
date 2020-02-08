@@ -1,41 +1,61 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carros/api/api_response.dart';
+import 'package:carros/api/car_api.dart';
 import 'package:carros/api/loripsum_api.dart';
 import 'package:carros/entity/car.dart';
-import 'package:carros/service/favorite_service.dart';
+import 'package:carros/utils/event_bus.dart';
+import 'package:carros/utils/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 
-class DetailCar extends StatefulWidget {
+class Video extends StatefulWidget {
   Car c;
 
-  DetailCar(this.c);
+  Video(this.c);
 
   @override
-  _DetailCarState createState() => _DetailCarState();
+  _VideoState createState() => _VideoState();
 }
 
-class _DetailCarState extends State<DetailCar> {
+class _VideoState extends State<Video> {
   final _bloc = LoripsumBloc();
-
-  Color _color = Colors.white;
+  bool isShow = false;
+  VideoPlayerController _controller;
 
   @override
   void initState() {
     super.initState();
-    FavoritoService.isFavorito(widget.c).then((fav){
-      updateHeart(fav);
-    });
     _bloc.fetch();
+        _controller = VideoPlayerController.network(
+            'https://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4')
+          ..initialize().then((_) {
+        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        setState(() {
+          _controller.play();
+          isShow = true;
+        });
+      });
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
       child: ListView(
         children: <Widget>[
-          imageCar(widget.c.urlFoto),
+          !isShow ? Container(
+            height: 150,
+            child: LoadingRotating.square(
+              size: 20,
+              backgroundColor: Colors.greenAccent,
+              duration: Duration(milliseconds: 900),
+            ),
+          ) :
+          _video(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 5),
             child: Divider(
@@ -53,8 +73,6 @@ class _DetailCarState extends State<DetailCar> {
         ],
       ),
     );
-
-
   }
 
   _description() {
@@ -128,19 +146,21 @@ class _DetailCarState extends State<DetailCar> {
         ),
         Row(
           children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.favorite,
-                color: _color,
-              ),
-              onPressed: _onClickFavorito,
-            ),
-            IconButton(
-              icon: Icon(Icons.play_circle_filled),
-              onPressed: (){
-                launch(widget.c.urlVideo);
-              },
-            ),
+            !isShow
+                ? Center(
+                    child: LoadingBouncingLine.circle(
+                      size: 20,
+                      backgroundColor: Colors.greenAccent,
+                      duration: Duration(milliseconds: 900),
+                    ),
+                  )
+                : IconButton(
+                    icon: Icon(
+                      _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                    ),
+                    onPressed: _onClickVideo,
+                  ),
           ],
         ),
       ],
@@ -149,15 +169,15 @@ class _DetailCarState extends State<DetailCar> {
 
   imageCar(String url) {
     return CachedNetworkImage(
-      imageUrl: url ,
+      imageUrl: url,
       width: 250,
       height: 250,
       placeholder: (context, url) => SizedBox(
         height: 90,
         width: 90,
-        child: LoadingBouncingGrid.circle(
+        child: LoadingFlipping.circle(
           size: 25,
-          backgroundColor: Colors.greenAccent,
+          backgroundColor: Colors.red,
           duration: Duration(milliseconds: 900),
         ),
       ),
@@ -171,14 +191,26 @@ class _DetailCarState extends State<DetailCar> {
     _bloc.dispose();
   }
 
-  updateHeart(bool isFavorito){
-    setState(() {
-      _color = isFavorito ? Colors.red : Colors.white;
-    });
+  _video() {
+    return Column(
+      children: <Widget>[
+        Center(
+          child: _controller.value.initialized
+              ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+              : Container(),
+        ),
+      ],
+    );
   }
 
-  void _onClickFavorito() async {
-    bool isFavorito = await FavoritoService.favoritar(widget.c, context);
-     updateHeart(isFavorito);
+  _onClickVideo() {
+    setState(() {
+      _controller.value.isPlaying
+          ? _controller.pause()
+          : _controller.play();
+    });
   }
 }

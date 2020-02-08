@@ -13,8 +13,9 @@ import 'package:provider/provider.dart';
 
 class CarPage extends StatefulWidget {
   String tipo;
+  int idxTab;
 
-  CarPage(this.tipo);
+  CarPage(this.tipo, {this.idxTab});
 
   @override
   _CarPageState createState() => _CarPageState();
@@ -88,7 +89,7 @@ class _CarPageState extends State<CarPage>
           return RefreshIndicator(
             onRefresh: _onRefresh,
             color: Colors.green,
-            child: MyListView(snapshot.data),
+            child: MyListView(snapshot.data, idx: widget.idxTab,),
           );
         },
       ),

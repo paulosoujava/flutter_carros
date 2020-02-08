@@ -13,6 +13,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin<Home> {
   TabController _tabController;
 
+
   @override
   void initState() {
     super.initState();
@@ -59,10 +60,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin<Home> {
       body: TabBarView(
         controller: _tabController,
         children: [
-          CarPage(TypeCar.classicos),
-          CarPage(TypeCar.esportivos),
-          CarPage(TypeCar.luxo),
-          FavoritePage(),
+          CarPage(
+            TypeCar.classicos,
+            idxTab: 1,
+          ),
+          CarPage(
+            TypeCar.esportivos,
+            idxTab: 1,
+          ),
+          CarPage(
+            TypeCar.luxo,
+            idxTab: 2,
+          ),
+          FavoritePage(3),
         ],
       ),
       //drawer: DrawerList()

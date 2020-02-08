@@ -9,6 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class FavoritePage extends StatefulWidget {
+
+  int idx;
+
+  FavoritePage(this.idx);
+
   @override
   _FavoritePageState createState() => _FavoritePageState();
 }
@@ -16,6 +21,8 @@ class FavoritePage extends StatefulWidget {
 class _FavoritePageState extends State<FavoritePage>
     with AutomaticKeepAliveClientMixin<FavoritePage> {
   List<Car> cars;
+
+
 
   @override
   bool get wantKeepAlive => true;
@@ -45,7 +52,7 @@ class _FavoritePageState extends State<FavoritePage>
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: Colors.green,
-      child: MyListView(cars),
+      child: MyListView(cars, idx: widget.idx),
     );
   }
 

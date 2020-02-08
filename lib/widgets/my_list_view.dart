@@ -5,24 +5,43 @@ import 'package:carros/entity/car.dart';
 import 'package:carros/pages/delete_car.dart';
 import 'package:carros/pages/main_detail_car.dart';
 import 'package:carros/utils/event_bus.dart';
+import 'package:carros/utils/prefs.dart';
 import 'package:carros/utils/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
+import 'package:nice_button/nice_button.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:share/share.dart';
 
-class MyListView extends StatelessWidget {
+class MyListView extends StatefulWidget {
   List<Car> cars;
+int idx;
+  MyListView(this.cars, {this.idx = 0});
 
-  MyListView(this.cars);
+  @override
+  _MyListViewState createState() => _MyListViewState();
+}
+
+class _MyListViewState extends State<MyListView> {
+  int tabIdx;
+  @override
+  void initState() {
+    super.initState();
+    Prefs.getInt("tabIdx").then((idx) {
+      tabIdx = idx;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Container(
       child: ListView.builder(
-        itemCount: cars != null ? cars.length : 0,
+        itemCount: widget.cars != null ? widget.cars.length : 0,
         itemBuilder: (context, idx) {
-          Car c = cars[idx];
+          Car c = widget.cars[idx];
           return Container(
             padding: EdgeInsets.all(16),
             child: InkWell(
@@ -30,7 +49,13 @@ class MyListView extends StatelessWidget {
                 push(context, MainDetailCar(c));
               },
               onLongPress: () {
-                push(context, _onClickDeletar(context, c));
+                print(tabIdx);
+                if (tabIdx == 3) {
+                  alert(context,
+                      "Função somente para as abas: Classicos, Esportivos e Luxo");
+                } else {
+                  _onClickDeletar(context, c);
+                }
               },
               child: Card(
                 elevation: 4,
@@ -65,7 +90,7 @@ class MyListView extends StatelessWidget {
                           FlatButton(
                             child: const Text('Share'),
                             onPressed: () {
-                              /* ... */
+                              Share.share("Olha este carro: ${c.nome}");
                             },
                           ),
                         ],
@@ -83,8 +108,7 @@ class MyListView extends StatelessWidget {
 
   imageCar(String url) {
     return CachedNetworkImage(
-      imageUrl: url ??
-          "http://www.livroandroid.com.br/livro/carros/esportivos/Maserati_Grancabrio_Sport.png",
+      imageUrl: url,
       width: 250,
       placeholder: (context, url) => SizedBox(
         height: 90,
@@ -108,20 +132,58 @@ class MyListView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text("O que deseja fazer", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
-                FlatButton(
-                    child: Text("Compartilhar"), onPressed: () => Navigator.pop(context)),
-                FlatButton(
-                    child: Text("Visulalizar"), onPressed: () => Navigator.pop(context)),
-                FlatButton(
-                    child: Text("Deletar"), onPressed: () => Navigator.pop(context)),
+                Text(
+                  "O que deseja fazer",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Divider(
+                  color: Colors.white,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    NiceButton(
+                      mini: true,
+                      icon: Icons.share,
+                      background: Colors.black,
+                      onPressed: () {
+                        pop(context);
+                        Share.share("Olha este carro: ${c.nome}");
+                      },
+                    ),
+                    NiceButton(
+                      mini: true,
+                      icon: Icons.delete,
+                      background: Colors.black,
+                      onPressed: () {
+                        pop(context);
+                        _deletar(context, c);
+                      },
+                    ),
+                    NiceButton(
+                      mini: true,
+                      icon: Icons.visibility,
+                      background: Colors.black,
+                      onPressed: () {
+                        pop(context);
+                        push(context, MainDetailCar(c));
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           );
         });
   }
 
-  _ClickDeletar(context, Car c) {
+  _deletar(context, Car c) {
     AlertStyle alertStyle;
     _alert(context, "Você tem certeza?", () async {
       ApiResponse<bool> response = await CarAPi.delete(c);
